@@ -1,5 +1,5 @@
 const url = require('url')
-const { Pool } = require('generic-pool')
+const { createPool } = require('generic-pool')
 
 function parseDbUrl (dbURL) {
   const { protocol, hostname, port, pathname, auth } = url.parse(dbURL)
@@ -32,27 +32,20 @@ function rpool (r, dbOpts, poolOpts) {
   const dbOptions = typeof dbOpts === 'string'
     ? parseDbUrl(dbOpts)
     : Object.assign({}, dbOpts, dbOpts.url && parseDbUrl(dbOpts.url))
-  const pool = new Pool(Object.assign({
-    name: 'rpool',
-    max: 10,
-    min: 1,
-    idleTimeoutMillis: 30 * 1000,
+
+  const pool = createPool({
     create: (done) => r.connect(dbOptions, done),
     destroy: (connection) => connection.close(),
     validate: (connection) => connection.isOpen()
-  }, poolOpts))
+  }, Object.assign({ name: 'rpool', max: 10, min: 1, idleTimeoutMillis: 30 * 1000 }, poolOpts))
 
   function drain () {
     pool.drain(pool.destroyAllNow)
   }
 
   function acquire (priority) {
-    return new Promise((resolve, reject) => {
-      pool.acquire((err, connection) => err
-        ? reject(err)
-        : resolve({ connection, release: () => pool.release(connection) })
-      )
-    }, priority)
+    return pool.acquire(priority)
+      .then((connection) => ({ connection, release: () => pool.release(connection) }))
   }
 
   function run (query, opt) {
