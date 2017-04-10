@@ -1,0 +1,40 @@
+{
+  "name": "rpool",
+  "version": "0.0.0",
+  "description": "Promise based RethinkDB connection pool",
+  "main": "rpool.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dotcypress/rpool.git"
+  },
+  "keywords": [
+    "RethinkDB",
+    "promise",
+    "connection pool"
+  ],
+  "author": "Vitaly Domnikov <dotcypress@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dotcypress/rpool/issues"
+  },
+  "homepage": "https://github.com/dotcypress/rpool#readme",
+  "engines": {
+    "node": ">=6.2.1"
+  },
+  "scripts": {
+    "test": "eslint . && ava test"
+  },
+  "devDependencies": {
+    "ava": "^0.19.0",
+    "babel-eslint": "^7.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.0"
+  },
+  "dependencies": {
+    "generic-pool": "^3.1.7"
+  }
+}
