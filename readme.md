@@ -26,8 +26,8 @@ $ npm install --save rpool
   * `db`: the default database (default test).
   * See [RethinkDB docs](https://www.rethinkdb.com/api/javascript/connect/) for additional options.
 * `poolOptions` - Pool options
-  * `max`: maximum number of connections. (default 10)
   * `min`: minimum number of connections to keep in pool at any given time. If this is set >= max, the pool will silently set the min to equal `max`. (default 1)
+  * `max`: maximum number of connections. (default 10)
   * `idleTimeoutMillis`: the minimum amount of time that an object may sit idle in the pool before it is eligible for eviction. (default 30 seconds)
   * See [generic-pool docs](https://www.npmjs.com/package/generic-pool).
 
@@ -39,7 +39,7 @@ const rpool = require('rpool')
 
 const pool = rpool(r, 'rethinkdb://localhost:32779/foo')
 const pool = rpool(r, 'rethinkdb://localhost:32779/foo', { max: 100, idleTimeoutMillis: 10000 })
-const pool = rpool(r, { url: 'rethinkdb://localhost:32779/foo', timeout: 10 }, { max: 100 })
+const pool = rpool(r, { url: 'rethinkdb://localhost:32779', db: 'bar' }, { max: 100 })
 const pool = rpool(r, { host: 'localhost', port: '32779', db: 'foo' }, { max: 10 })
 ```
 

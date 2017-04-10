@@ -9,7 +9,6 @@
   },
   "keywords": [
     "RethinkDB",
-    "promise",
     "connection pool"
   ],
   "author": "Vitaly Domnikov <dotcypress@gmail.com>",
