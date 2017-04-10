@@ -4,7 +4,7 @@
 
 # rpool
 
-Promise based [RethinkDB](https://rethinkdb.com) connection pool.
+🔥 Promise based [RethinkDB](https://rethinkdb.com) connection pool.
 
 ## Installation
 
@@ -20,7 +20,7 @@ $ npm install --save rpool
 
 * `r` - RethinkDB reference
 * `dbOptions` - RethinkDB options
-  * `url`: 🔥 connection string. If present will silentry rewrite connections options(host, port, etc.)
+  * `url`: Connection string. If present will silentry rewrite connections options(host, port, etc.)
   * `host`: the host to connect to (default localhost).
   * `port`: the port to connect on (default 28015).
   * `db`: the default database (default test).
@@ -45,7 +45,7 @@ const pool = rpool(r, { host: 'localhost', port: '32779', db: 'foo' }, { max: 10
 
 ### Acquire / release connections
 
-`pool.acquire(priority) -> Promise<{connection, release}>`
+`pool.acquire(priority) -> Promise<#{connection, release}>`
 
 * `priority`: optional priority.
 
@@ -60,7 +60,7 @@ pool.acquire().then(({ connection, release }) => {
   r.table('users')
     .run(connection)
     .then((cursor) => {
-      console.log('Users cursor:', cursor)
+      console.log('Cursor:', cursor)
     })
     .catch((err) => {
       console.log(err)
@@ -76,7 +76,7 @@ pool.acquire().then(({ connection, release }) => {
 * `query`: RethinkDB query.
 * `options`: [Run option](https://www.rethinkdb.com/api/javascript/run/).
 
-> ⚠️ Note: Cursors will be automatically coerced to arrays.
+> ⚠️ Note: All cursors are automatically converted into arrays.
 
 **Example:**
 

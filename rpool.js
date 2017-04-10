@@ -28,6 +28,12 @@ function parseDbUrl (dbURL) {
   return result
 }
 
+function realizeCursor (cursor) {
+  return cursor && typeof cursor.toArray === 'function'
+    ? cursor.toArray()
+    : cursor
+}
+
 function rpool (r, dbOpts, poolOpts) {
   const dbOptions = typeof dbOpts === 'string'
     ? parseDbUrl(dbOpts)
@@ -37,25 +43,23 @@ function rpool (r, dbOpts, poolOpts) {
     create: (done) => r.connect(dbOptions, done),
     destroy: (connection) => connection.close(),
     validate: (connection) => connection.isOpen()
-  }, Object.assign({ name: 'rpool', max: 10, min: 1, idleTimeoutMillis: 30 * 1000 }, poolOpts))
+  }, Object.assign({ max: 10, min: 1, idleTimeoutMillis: 30 * 1000 }, poolOpts))
 
   function drain () {
     pool.drain(pool.destroyAllNow)
   }
 
   function acquire (priority) {
-    return pool.acquire(priority)
-      .then((connection) => ({ connection, release: () => pool.release(connection) }))
+    return pool.acquire(priority).then((connection) => ({
+      connection,
+      release: () => pool.release(connection)
+    }))
   }
 
-  function run (query, opt) {
+  function run (query, opts) {
     return acquire().then(({ connection, release }) => {
-      return query.run(connection, opt)
-        .then((cursor) => {
-          return cursor && typeof cursor.toArray === 'function'
-            ? cursor.toArray()
-            : cursor
-        })
+      return query.run(connection, opts)
+        .then(realizeCursor)
         .then((result) => {
           release()
           return result

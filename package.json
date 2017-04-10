@@ -1,6 +1,6 @@
 {
   "name": "rpool",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Promise based RethinkDB connection pool",
   "main": "rpool.js",
   "repository": {
