@@ -71,7 +71,7 @@ pool.acquire().then(({ connection, release }) => {
 
 #### Run queries
 
-`pool.run(query, opt) -> Promise<Result>`
+`pool.run(query, options) -> Promise<QueryResult>`
 
 * `query`: RethinkDB query.
 * `options`: [Run option](https://www.rethinkdb.com/api/javascript/run/).
