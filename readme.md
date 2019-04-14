@@ -4,7 +4,7 @@
 
 # rpool
 
-🔥 Promise based [RethinkDB](https://rethinkdb.com) connection pool.
+[RethinkDB](https://rethinkdb.com) connection pool.
 
 ## Installation
 
@@ -73,7 +73,7 @@ pool.acquire().then(({ connection, release }) => {
 
 `pool.run(query, options) -> Promise<QueryResult>`
 
-* `query`: RethinkDB query.
+* `query`: RethinkDB query or query builder function.
 * `options`: [Run option](https://www.rethinkdb.com/api/javascript/run/).
 
 > ⚠️ Note: All cursors are automatically converted into arrays.
@@ -87,6 +87,10 @@ const rpool = require('rpool')
 const pool = rpool(r, 'rethinkdb://localhost:32779/foo')
 
 pool.run(r.table('users')).then((users) => {
+  console.log('Users:', users)
+})
+
+pool.run((r) => r.table('users')).then((users) => {
   console.log('Users:', users)
 })
 

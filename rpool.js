@@ -1,8 +1,8 @@
-const url = require('url')
+const { URL } = require('url')
 const { createPool } = require('generic-pool')
 
 function parseDbUrl (dbURL) {
-  const { protocol, hostname, port, pathname, auth } = url.parse(dbURL)
+  const { protocol, hostname, port, pathname, auth } = new URL(dbURL)
   if (protocol !== 'rethinkdb:' && protocol !== 'rethinkdb2:') {
     throw new Error('Unsupported protocol: ' + protocol)
   }
@@ -28,12 +28,6 @@ function parseDbUrl (dbURL) {
   return result
 }
 
-function realizeCursor (cursor) {
-  return cursor && typeof cursor.toArray === 'function'
-    ? cursor.toArray()
-    : cursor
-}
-
 function rpool (r, dbOpts, poolOpts) {
   const dbOptions = typeof dbOpts === 'string'
     ? parseDbUrl(dbOpts)
@@ -46,7 +40,7 @@ function rpool (r, dbOpts, poolOpts) {
   }, Object.assign({ max: 10, min: 1, idleTimeoutMillis: 30 * 1000 }, poolOpts))
 
   function drain () {
-    pool.drain(pool.destroyAllNow)
+    return pool.drain().then(() => pool.clear())
   }
 
   function acquire (priority) {
@@ -57,9 +51,16 @@ function rpool (r, dbOpts, poolOpts) {
   }
 
   function run (query, opts) {
+    if (Array.isArray(query)) {
+      return Promise.all(query.map((q) => run(q, opts)))
+    }
+    const dbQuery = typeof query.run === 'function' ? query : query(r)
     return acquire().then(({ connection, release }) => {
-      return query.run(connection, opts)
-        .then(realizeCursor)
+      return dbQuery.run(connection, opts)
+        .then((cursor) =>
+          (cursor && typeof cursor.toArray === 'function')
+            ? cursor.toArray()
+            : cursor)
         .then((result) => {
           release()
           return result
@@ -70,6 +71,7 @@ function rpool (r, dbOpts, poolOpts) {
         })
     })
   }
+
   return { acquire, run, drain }
 }
 
