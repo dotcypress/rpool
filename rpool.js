@@ -29,12 +29,26 @@ function parseDbUrl (dbURL) {
 }
 
 function rpool (r, dbOpts, poolOpts) {
-  const dbOptions = typeof dbOpts === 'string'
-    ? parseDbUrl(dbOpts)
-    : Object.assign({}, dbOpts, dbOpts.url && parseDbUrl(dbOpts.url))
+  const dbOptions = Array.isArray(dbOpts) ? dbOpts : [dbOpts]
+  const connectionConfig = dbOptions.reduce((acc, opts) => {
+    if (typeof opts === 'string') {
+      acc.push(parseDbUrl(opts))
+    } else if (Array.isArray(opts.url)) {
+      acc.push(...opts.url.map((url) => Object.assign({}, opts, { url }, parseDbUrl(url))))
+    } else {
+      acc.push(Object.assign({}, opts, opts.url && parseDbUrl(opts.url)))
+    }
+    return acc
+  }, [])
+  let serverIndex = 0
+  const getConnectionConfig = () => {
+    serverIndex = (serverIndex + 1) % connectionConfig.length
+    console.log('serverIndex', serverIndex)
+    return connectionConfig[serverIndex]
+  }
 
   const pool = createPool({
-    create: (done) => r.connect(dbOptions, done),
+    create: (done) => r.connect(getConnectionConfig(), done),
     destroy: (connection) => connection.close(),
     validate: (connection) => connection.isOpen()
   }, Object.assign({ max: 10, min: 1, idleTimeoutMillis: 30 * 1000 }, poolOpts))
