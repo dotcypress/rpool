@@ -19,8 +19,8 @@ $ npm install --save rpool
 `rpool(r, dbOptions, poolOptions) -> Pool`
 
 * `r` - RethinkDB reference
-* `dbOptions` - RethinkDB options
-  * `url`: Connection string. If present will silentry rewrite connections options(host, port, etc.)
+* `dbOptions | dbOptions[]` - RethinkDB options
+  * `url`: Connection string/array of string. If present will silentry rewrite connections options(host, port, etc.)
   * `host`: the host to connect to (default localhost).
   * `port`: the port to connect on (default 28015).
   * `db`: the default database (default test).
@@ -38,9 +38,14 @@ const r = require('rethinkdb')
 const rpool = require('rpool')
 
 const pool = rpool(r, 'rethinkdb://localhost:32779/foo')
+const pool = rpool(r, ['rethinkdb://portal-1:32779/foo', 'rethinkdb://portal-2:32779/foo'])
 const pool = rpool(r, 'rethinkdb://localhost:32779/foo', { max: 100, idleTimeoutMillis: 10000 })
 const pool = rpool(r, { url: 'rethinkdb://localhost:32779', db: 'bar' }, { max: 100 })
 const pool = rpool(r, { host: 'localhost', port: '32779', db: 'foo' }, { max: 10 })
+const pool = rpool(r, [
+  { url: 'rethinkdb://portal-1:32779/bar',' }
+  { url: 'rethinkdb://portal-2:32779', db: 'bar' }
+], { max: 100 })
 ```
 
 ### Acquire / release connections

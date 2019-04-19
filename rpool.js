@@ -2,7 +2,7 @@ const { URL } = require('url')
 const { createPool } = require('generic-pool')
 
 function parseDbUrl (dbURL) {
-  const { protocol, hostname, port, pathname, auth } = new URL(dbURL)
+  const { protocol, hostname, port, pathname, username, password } = new URL(dbURL)
   if (protocol !== 'rethinkdb:' && protocol !== 'rethinkdb2:') {
     throw new Error('Unsupported protocol: ' + protocol)
   }
@@ -13,13 +13,12 @@ function parseDbUrl (dbURL) {
   if (port) {
     result.port = parseInt(port, 10)
   }
-  if (auth) {
-    const parts = auth.split(':')
-    if (parts.length === 1) {
-      result.authKey = parts[0]
+  if (username) {
+    if (password) {
+      result.user = username
+      result.password = password
     } else {
-      result.user = parts[0]
-      result.password = parts[1]
+      result.authKey = username
     }
   }
   if (pathname && pathname !== '/') {
@@ -29,8 +28,8 @@ function parseDbUrl (dbURL) {
 }
 
 function rpool (r, dbOpts, poolOpts) {
-  const dbOptions = Array.isArray(dbOpts) ? dbOpts : [dbOpts]
-  const connectionConfig = dbOptions.reduce((acc, opts) => {
+  const dbConfig = Array.isArray(dbOpts) ? dbOpts : [dbOpts]
+  const connectionConfig = dbConfig.reduce((acc, opts) => {
     if (typeof opts === 'string') {
       acc.push(parseDbUrl(opts))
     } else if (Array.isArray(opts.url)) {
@@ -40,18 +39,29 @@ function rpool (r, dbOpts, poolOpts) {
     }
     return acc
   }, [])
+
   let serverIndex = 0
   const getConnectionConfig = () => {
     serverIndex = (serverIndex + 1) % connectionConfig.length
-    console.log('serverIndex', serverIndex)
     return connectionConfig[serverIndex]
   }
+
+  const poolOptions = Object.assign({
+    max: 10,
+    min: 1,
+    idleTimeoutMillis: 30 * 1000,
+    onCreateError: (err) => console.log('rpool: Failed to open database connection', err),
+    onDestroyError: (err) => console.log('rpool: Failed to close database connection', err)
+  }, poolOpts)
 
   const pool = createPool({
     create: (done) => r.connect(getConnectionConfig(), done),
     destroy: (connection) => connection.close(),
     validate: (connection) => connection.isOpen()
-  }, Object.assign({ max: 10, min: 1, idleTimeoutMillis: 30 * 1000 }, poolOpts))
+  }, poolOptions)
+
+  pool.on('factoryCreateError', poolOptions.onCreateError)
+  pool.on('factoryDestroyError', poolOptions.onDestroyError)
 
   function drain () {
     return pool.drain().then(() => pool.clear())
@@ -86,7 +96,7 @@ function rpool (r, dbOpts, poolOpts) {
     })
   }
 
-  return { acquire, run, drain }
+  return { acquire, run, drain, pool }
 }
 
 module.exports = rpool
