@@ -20,7 +20,7 @@ $ npm install --save rpool
 
 * `r` - RethinkDB reference
 * `dbOptions | dbOptions[]` - RethinkDB options
-  * `url`: Connection string/array of string. If present will silentry rewrite connections options(host, port, etc.)
+  * `url`: Connection string/array of strings. If present will silentry rewrite connections options(host, port, etc.)
   * `host`: the host to connect to (default localhost).
   * `port`: the port to connect on (default 28015).
   * `db`: the default database (default test).
