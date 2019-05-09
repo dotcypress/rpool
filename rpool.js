@@ -55,7 +55,7 @@ function rpool (r, dbOpts, poolOpts) {
   }, poolOpts)
 
   const pool = createPool({
-    create: (done) => r.connect(getConnectionConfig(), done),
+    create: () => r.connect(getConnectionConfig()),
     destroy: (connection) => connection.close(),
     validate: (connection) => connection.isOpen()
   }, poolOptions)
@@ -79,8 +79,8 @@ function rpool (r, dbOpts, poolOpts) {
       return Promise.all(query.map((q) => run(q, opts)))
     }
     const dbQuery = typeof query.run === 'function' ? query : query(r)
-    return acquire().then(({ connection, release }) => {
-      return dbQuery.run(connection, opts)
+    return acquire().then(({ connection, release }) =>
+      dbQuery.run(connection, opts)
         .then((cursor) =>
           (cursor && typeof cursor.toArray === 'function')
             ? cursor.toArray()
@@ -93,7 +93,7 @@ function rpool (r, dbOpts, poolOpts) {
           release()
           throw err
         })
-    })
+    )
   }
 
   return { acquire, run, drain, pool }
