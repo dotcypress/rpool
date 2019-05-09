@@ -49,7 +49,8 @@ function rpool (r, dbOpts, poolOpts) {
   const poolOptions = Object.assign({
     max: 10,
     min: 1,
-    idleTimeoutMillis: 30 * 1000,
+    acquireTimeoutMillis: 10 * 1000,
+    testOnBorrow: true,
     onCreateError: (err) => console.log('rpool: Failed to open database connection', err),
     onDestroyError: (err) => console.log('rpool: Failed to close database connection', err)
   }, poolOpts)
